@@ -6,7 +6,8 @@ import numpy as np
 from itertools import count
 from utils import ALGOS, create_test_env, get_saved_hyperparams
 from stable_baselines3.common.evaluation import evaluate_policy
-
+from typing import Dict, Any
+from gym.spaces import Space
 
 def parse():
     parser = argparse.ArgumentParser()
@@ -47,6 +48,13 @@ def read_name(filename):
     return env_name, algo, team_name[0]
 
 
+def patch_setstate(self, state: Dict[str, Any]) -> None:
+    """Restores pickled state."""
+    if "_shape" in state:
+        state["shape"] = state["_shape"]
+    self.__dict__.update(state)
+
+    
 def get_scores(args, folder, policy_file, env_name, algo, stats_path, hyperparams, n_evals):
     """
     """
@@ -63,17 +71,18 @@ def get_scores(args, folder, policy_file, env_name, algo, stats_path, hyperparam
     fields = policy_file.split('.')
 
 
-    custom_objects = {}
+    #custom_objects = {}
     # This part is useful if the generated files come from a more recent version of python
     # newer_python_version = sys.version_info.major == 3 and sys.version_info.minor >= 8
     # if newer_python_version:
-    # custom_objects = {
-    #         "learning_rate": 0.0,
-    #         "lr_schedule": lambda _: 0.0,
-    #         "exploration_schedule": lambda _: 0.0,
-    #         "clip_range": lambda _: 0.0,
-    #     }
+    custom_objects = {
+            "learning_rate": 0.0,
+            "lr_schedule": lambda _: 0.0,
+            "exploration_schedule": lambda _: 0.0,
+            "clip_range": lambda _: 0.0,
+        }
 
+    Space.__setstate__ = patch_setstate
     model = ALGOS[algo].load(folder + "/" + fields[0], custom_objects=custom_objects)
     policy = model.policy
     episode_rewards, _ = evaluate_policy(policy, env, n_eval_episodes=n_evals, return_episode_rewards=True)
@@ -120,7 +129,7 @@ class Evaluator:
         for env, dico in self.score_dic.items():
             print("Environment :", env)
             for key, val in sorted(dico.items(),reverse=True):
-                print("team: ", val[0], "           algo:", val[1], "      mean score: ", key, "std: ", val[2])
+                print("team: ", val[0], " \t \t algo:", val[1], " \t \t mean score: ", key, "std: ", val[2])
 
 
 if __name__ == '__main__':
