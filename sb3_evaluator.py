@@ -64,6 +64,7 @@ def get_scores(args, folder, policy_file, env_name, algo, stats_path, hyperparam
 
 
     custom_objects = {}
+    # This part is useful if the generated files come from a more recent version of python
     # newer_python_version = sys.version_info.major == 3 and sys.version_info.minor >= 8
     # if newer_python_version:
     # custom_objects = {
