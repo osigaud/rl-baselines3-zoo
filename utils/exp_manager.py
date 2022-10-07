@@ -259,7 +259,10 @@ class ExperimentManager(object):
 
         if self.custom_hyperparams is not None:
             # Overwrite hyperparams if needed
-            hyperparams.update(self.custom_hyperparams)
+
+            # hyperparams.update(self.custom_hyperparams)
+            # Kiara: Commented above line because custom parameters squash the given parameters and use ActorCritic
+            
         # Sort hyperparams that will be saved
         saved_hyperparams = OrderedDict([(key, hyperparams[key]) for key in sorted(hyperparams.keys())])
 
